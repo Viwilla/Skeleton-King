@@ -87,6 +87,21 @@ export function useRoomState() {
         setRoom(r3.data)
         if (r3.data.status === 'playing') setPhase('playing')
         if (r3.data.status === 'finished') setPhase('gameover')
+
+        // Advance round when all players submitted — conditional update prevents double-advance
+        if (r3.data.status === 'playing' && r1.data && r2.data) {
+          const currentRound = r3.data.current_round
+          const submittedThisRound = r2.data.filter(e => e.round_number === currentRound)
+          if (submittedThisRound.length >= r1.data.length && r1.data.length > 0) {
+            if (currentRound >= 10) {
+              await supabase.from('rooms').update({ status: 'finished' })
+                .eq('id', roomId).eq('current_round', currentRound).eq('status', 'playing')
+            } else {
+              await supabase.from('rooms').update({ current_round: currentRound + 1 })
+                .eq('id', roomId).eq('current_round', currentRound)
+            }
+          }
+        }
       }
     }, 2000)
 
@@ -176,26 +191,6 @@ export function useRoomState() {
       if (insertErr) throw insertErr
 
       await refreshEntries(room.id)
-
-      // Only advance round when ALL players have submitted
-      const { data: allEntries } = await supabase
-        .from('round_entries').select('player_id').eq('room_id', room.id).eq('round_number', roundNumber)
-      const { data: allPlayers } = await supabase
-        .from('players').select('id').eq('room_id', room.id)
-      const allSubmitted = allPlayers && allEntries && allEntries.length >= allPlayers.length
-
-      if (!allSubmitted) return
-
-      const isLastRound = roundNumber >= 10
-      if (isLastRound) {
-        await supabase.from('rooms').update({ status: 'finished' }).eq('id', room.id)
-        setRoom(r => ({ ...r, status: 'finished' }))
-        setPhase('gameover')
-      } else {
-        const nextRound = roundNumber + 1
-        await supabase.from('rooms').update({ current_round: nextRound }).eq('id', room.id)
-        setRoom(r => ({ ...r, current_round: nextRound }))
-      }
     } catch (e) {
       setError(e.message)
     } finally {
