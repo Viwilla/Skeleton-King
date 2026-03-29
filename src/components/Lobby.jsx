@@ -1,6 +1,15 @@
-export default function Lobby({ room, players, myPlayer, onStart, onLeave }) {
+import { useState } from 'react'
+
+export default function Lobby({ room, players, myPlayer, onStart, onLeave, onRefresh }) {
   const isHost = players[0]?.id === myPlayer?.id
   const canStart = players.length >= 2
+  const [refreshing, setRefreshing] = useState(false)
+
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    await onRefresh?.()
+    setTimeout(() => setRefreshing(false), 500)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-950 to-slate-900 flex items-center justify-center p-4">
@@ -16,9 +25,15 @@ export default function Lobby({ room, players, myPlayer, onStart, onLeave }) {
         </div>
 
         <div className="bg-slate-800/80 backdrop-blur border border-purple-800/40 rounded-2xl p-5 shadow-2xl mb-4">
-          <h2 className="text-slate-400 text-xs uppercase tracking-wider mb-3">
-            玩家 ({players.length}/8)
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-slate-400 text-xs uppercase tracking-wider">玩家 ({players.length}/8)</h2>
+            <button
+              onClick={handleRefresh}
+              className={`text-slate-500 active:text-purple-400 text-lg transition-transform ${refreshing ? 'animate-spin' : ''}`}
+            >
+              ↻
+            </button>
+          </div>
           <div className="space-y-2">
             {players.map((p, i) => (
               <div key={p.id} className="flex items-center gap-3">

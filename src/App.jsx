@@ -34,7 +34,7 @@ export default function App() {
     phase, room, players, myPlayer, roundEntries,
     currentRound, cumulativeScores, prevCumulativeScores,
     loading, error,
-    createRoom, joinRoom, startGame, submitRound, newGame,
+    createRoom, joinRoom, startGame, submitRound, newGame, refreshRoom,
   } = useRoomState()
 
   const [activeTab, setActiveTab] = useState('entry')
@@ -49,7 +49,7 @@ export default function App() {
   }
 
   if (phase === 'lobby') {
-    return <Lobby room={room} players={players} myPlayer={myPlayer} onStart={startGame} onLeave={newGame} />
+    return <Lobby room={room} players={players} myPlayer={myPlayer} onStart={startGame} onLeave={newGame} onRefresh={refreshRoom} />
   }
 
   if (phase === 'gameover') {

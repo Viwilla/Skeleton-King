@@ -218,10 +218,22 @@ export function useRoomState() {
     }
   })
 
+  const refreshRoom = useCallback(async () => {
+    if (!room) return
+    await refreshPlayers(room.id)
+    await refreshEntries(room.id)
+    const { data } = await supabase.from('rooms').select('*').eq('id', room.id).single()
+    if (data) {
+      setRoom(data)
+      if (data.status === 'playing') setPhase('playing')
+      if (data.status === 'finished') setPhase('gameover')
+    }
+  }, [room])
+
   return {
     phase, room, players, myPlayer, roundEntries,
     currentRound, cumulativeScores, prevCumulativeScores,
     loading, error,
-    createRoom, joinRoom, startGame, submitRound, newGame,
+    createRoom, joinRoom, startGame, submitRound, newGame, refreshRoom,
   }
 }
