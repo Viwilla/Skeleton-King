@@ -75,16 +75,12 @@ export function useRoomState() {
 
     // Polling fallback — inline queries to avoid stale closure
     const roomId = room.id
-    console.log('[poll] starting poll for room', roomId)
     const poll = setInterval(async () => {
-      console.log('[poll] tick for room', roomId)
       const [r1, r2, r3] = await Promise.all([
         supabase.from('players').select('*').eq('room_id', roomId).order('created_at'),
         supabase.from('round_entries').select('*').eq('room_id', roomId),
         supabase.from('rooms').select('*').eq('id', roomId).single(),
       ])
-      console.log('[poll] players:', r1.data?.length, r1.error?.message)
-      console.log('[poll] room status:', r3.data?.status, r3.error?.message)
       if (r1.data) setPlayers(r1.data)
       if (r2.data) setRoundEntries(r2.data)
       if (r3.data) {
