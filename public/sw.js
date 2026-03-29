@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skull-king-v1'
+const CACHE_NAME = 'skull-king-v3'
 const ASSETS = [
   '/',
   '/index.html',
