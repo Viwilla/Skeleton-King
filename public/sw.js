@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skull-king-v3'
+const CACHE_NAME = 'skull-king-v4'
 const ASSETS = [
   '/',
   '/index.html',
@@ -25,6 +25,8 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return
+  // Never cache Supabase API requests
+  if (event.request.url.includes('supabase.co')) return
   event.respondWith(
     caches.match(event.request).then(cached => {
       return cached || fetch(event.request).then(response => {
