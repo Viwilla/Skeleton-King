@@ -2,7 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 
 export const supabase = createClient(
   'https://kbsrmpglrdnsiwqfbpon.supabase.co',
-  'sb_publishable_b6q277k81WYjspEpEK8sDQ_K3tsiSYG'
+  'sb_publishable_b6q277k81WYjspEpEK8sDQ_K3tsiSYG',
+  { db: { schema: 'public' } }
 )
 
 export function getDeviceId() {
