@@ -128,7 +128,11 @@ export function useRoomState() {
 
   const startGame = useCallback(async () => {
     if (!room) return
-    await supabase.from('rooms').update({ status: 'playing', current_round: 1 }).eq('id', room.id)
+    const { error } = await supabase.from('rooms').update({ status: 'playing', current_round: 1 }).eq('id', room.id)
+    if (!error) {
+      setRoom(r => ({ ...r, status: 'playing', current_round: 1 }))
+      setPhase('playing')
+    }
   }, [room])
 
   const submitRound = useCallback(async (entries, roundNumber) => {
@@ -151,11 +155,17 @@ export function useRoomState() {
       })
       if (insertErr) throw insertErr
 
+      await refreshEntries(room.id)
+
       const isLastRound = roundNumber >= 10
       if (isLastRound) {
         await supabase.from('rooms').update({ status: 'finished' }).eq('id', room.id)
+        setRoom(r => ({ ...r, status: 'finished' }))
+        setPhase('gameover')
       } else {
-        await supabase.from('rooms').update({ current_round: roundNumber + 1 }).eq('id', room.id)
+        const nextRound = roundNumber + 1
+        await supabase.from('rooms').update({ current_round: nextRound }).eq('id', room.id)
+        setRoom(r => ({ ...r, current_round: nextRound }))
       }
     } catch (e) {
       setError(e.message)
