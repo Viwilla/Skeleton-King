@@ -73,7 +73,26 @@ export function useRoomState() {
       )
       .subscribe()
 
-    return () => supabase.removeChannel(channel)
+    // Polling fallback in case realtime is not configured
+    const poll = setInterval(async () => {
+      const { data } = await supabase.from('rooms').select('*').eq('id', room.id).single()
+      if (!data) return
+      setRoom(prev => {
+        if (prev?.status !== data.status || prev?.current_round !== data.current_round) {
+          if (data.status === 'playing') setPhase('playing')
+          if (data.status === 'finished') setPhase('gameover')
+          return data
+        }
+        return prev
+      })
+      refreshPlayers(room.id)
+      refreshEntries(room.id)
+    }, 3000)
+
+    return () => {
+      supabase.removeChannel(channel)
+      clearInterval(poll)
+    }
   }, [room?.id])
 
   const createRoom = useCallback(async (hostName) => {
