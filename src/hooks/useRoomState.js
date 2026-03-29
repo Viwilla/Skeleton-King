@@ -177,6 +177,15 @@ export function useRoomState() {
 
       await refreshEntries(room.id)
 
+      // Only advance round when ALL players have submitted
+      const { data: allEntries } = await supabase
+        .from('round_entries').select('player_id').eq('room_id', room.id).eq('round_number', roundNumber)
+      const { data: allPlayers } = await supabase
+        .from('players').select('id').eq('room_id', room.id)
+      const allSubmitted = allPlayers && allEntries && allEntries.length >= allPlayers.length
+
+      if (!allSubmitted) return
+
       const isLastRound = roundNumber >= 10
       if (isLastRound) {
         await supabase.from('rooms').update({ status: 'finished' }).eq('id', room.id)
