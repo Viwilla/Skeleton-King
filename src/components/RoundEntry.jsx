@@ -25,13 +25,13 @@ function NumberInput({ value, onChange, min = 0, max, label }) {
         <button
           type="button"
           onClick={() => onChange(Math.max(min, value - 1))}
-          className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm flex items-center justify-center"
+          className="w-10 h-10 rounded-lg bg-slate-700 active:bg-slate-600 text-slate-300 text-lg flex items-center justify-center select-none"
         >−</button>
-        <span className="w-6 text-center text-white font-mono text-sm">{value}</span>
+        <span className="w-8 text-center text-white font-mono text-base">{value}</span>
         <button
           type="button"
           onClick={() => onChange(Math.min(max, value + 1))}
-          className="w-6 h-6 rounded bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm flex items-center justify-center"
+          className="w-10 h-10 rounded-lg bg-slate-700 active:bg-slate-600 text-slate-300 text-lg flex items-center justify-center select-none"
         >+</button>
       </div>
     </div>
