@@ -73,19 +73,22 @@ export function useRoomState() {
       )
       .subscribe()
 
-    // Polling fallback in case realtime is not configured
+    // Polling fallback — inline queries to avoid stale closure
     const roomId = room.id
     const poll = setInterval(async () => {
-      try {
-        await refreshPlayers(roomId)
-        await refreshEntries(roomId)
-        const { data: roomData } = await supabase.from('rooms').select('*').eq('id', roomId).single()
-        if (!roomData) return
+      const [{ data: playersData }, { data: entriesData }, { data: roomData }] = await Promise.all([
+        supabase.from('players').select('*').eq('room_id', roomId).order('created_at'),
+        supabase.from('round_entries').select('*').eq('room_id', roomId),
+        supabase.from('rooms').select('*').eq('id', roomId).single(),
+      ])
+      if (playersData) setPlayers(playersData)
+      if (entriesData) setRoundEntries(entriesData)
+      if (roomData) {
         setRoom(roomData)
         if (roomData.status === 'playing') setPhase('playing')
         if (roomData.status === 'finished') setPhase('gameover')
-      } catch (_) {}
-    }, 3000)
+      }
+    }, 2000)
 
     return () => {
       supabase.removeChannel(channel)
