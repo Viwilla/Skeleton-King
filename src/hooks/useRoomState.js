@@ -76,15 +76,15 @@ export function useRoomState() {
     // Polling fallback in case realtime is not configured
     const roomId = room.id
     const poll = setInterval(async () => {
-      const [{ data: roomData }, ] = await Promise.all([
-        supabase.from('rooms').select('*').eq('id', roomId).single(),
-        refreshPlayers(roomId),
-        refreshEntries(roomId),
-      ])
-      if (!roomData) return
-      setRoom(roomData)
-      if (roomData.status === 'playing') setPhase('playing')
-      if (roomData.status === 'finished') setPhase('gameover')
+      try {
+        await refreshPlayers(roomId)
+        await refreshEntries(roomId)
+        const { data: roomData } = await supabase.from('rooms').select('*').eq('id', roomId).single()
+        if (!roomData) return
+        setRoom(roomData)
+        if (roomData.status === 'playing') setPhase('playing')
+        if (roomData.status === 'finished') setPhase('gameover')
+      } catch (_) {}
     }, 3000)
 
     return () => {
